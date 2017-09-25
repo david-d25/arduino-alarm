@@ -1,12 +1,12 @@
 #include <Adafruit_Sensor.h>
 
 #include <DHT.h>
-#include <DHT_U.h>
+#include <DHT_U.h>  
 
 #include <LiquidCrystal.h>
 #include <iarduino_RTC.h>
 
-byte degree[8] = {
+byte degreeSymbol[8] = {
   B00111,
   B00101,
   B00111,
@@ -16,47 +16,52 @@ byte degree[8] = {
   B00000,
 };
 
-#define RST 5
-#define DAT 4
-#define CLK 3
+#define LCD_WIDTH 16
+#define LCD_HEIGHT 2
 
-#define BTN_INTERRUPT_PIN 2
+#define TIME_PIN_RST 5
+#define TIME_PIN_DAT 4
+#define TIME_PIN_CLK 3
 
-#define RW 6
-#define E 7
-#define DB4 8
-#define DB5 9
-#define DB6 10
-#define DB7 11
+#define LCD_PIN_RS 6
+#define LCD_PIN_E 7
+#define LCD_PIN_DB4 8
+#define LCD_PIN_DB5 9
+#define LCD_PIN_DB6 10
+#define LCD_PIN_DB7 11
 
-#define LIGHT 12
-#define ALARMLED 13
+#define PIN_LIGHT 12
+#define PIN_ALARMLED 13
 
-#define DHTPIN A0
-#define BTNPIN A1
+#define PIN_BTN_INTERRUPT 2
 
-int h = 0;
-int t = 0;
-int mode = 0;
+#define PIN_DHT A0
+#define PIN_BTN A1
+#define PIN_LIGHT_DETECTOR A2
 
-bool alarmActive = false;
-bool lightActive = true;
+boolean isAlarmActive = false;
+boolean isLightActive = true;
 
-iarduino_RTC time(RTC_DS1302, RST, CLK, DAT);
-LiquidCrystal lcd(RW, E, DB4, DB5, DB6, DB7);
-DHT dht(DHTPIN, DHT11);
+iarduino_RTC time(RTC_DS1302, TIME_PIN_RST, TIME_PIN_CLK, TIME_PIN_DAT);
+LiquidCrystal lcd(LCD_PIN_RS, LCD_PIN_E, LCD_PIN_DB4, LCD_PIN_DB5, LCD_PIN_DB6, LCD_PIN_DB7);
+DHT dht(PIN_DHT, DHT11);
+
+int temperature = 0;
+int humidity = 0;
 
 void setup() {
-  Serial.begin(9600);
-  pinMode(A5, INPUT_PULLUP);
-  pinMode(A4, OUTPUT);
+  pinMode(PIN_LIGHT, OUTPUT);
+  pinMode(PIN_ALARMLED, OUTPUT);
   
+  pinMode(PIN_BTN_INTERRUPT, INPUT_PULLUP);
+  
+  attachInterrupt(0, onButtonPress, RISING);
+  
+  lcd.begin(LCD_WIDTH, LCD_HEIGHT);
+  lcd.createChar(1, degreeSymbol);
   time.begin();
-  lcd.begin(16, 2); //Размерность экрана
-  lcd.createChar(1, degree);
   dht.begin();
-  h = dht.readHumidity();
-  t = dht.readTemperature();
+  updateHT();
 }
 
 void loop() {
@@ -69,41 +74,50 @@ void loop() {
     displayDateTime();
     delay(1);
   }
-  if (digitalRead(BTNPIN) == 1)
+  if (digitalRead(PIN_BTN) == 1)
   {
-    turnLight(!lightActive);
+    turnLight(!isLightActive);
   }
 }
+
+void onButtonPress() {
+ // turnLight(!isLightActive);
+}
+
 void displayDateTime()
 {
   lcd.home();
   lcd.print(time.gettime("d/m/Y "));
   lcd.print(time.gettime("D"));
   lcd.setCursor(0, 1);
-  lcd.print(time.gettime("h:i A   "));
-  lcd.print(t);
-  lcd.print("\1C");
+  lcd.print(time.gettime("h:i A"));
+  lcd.setCursor(11, 1);
+  lcd.print(temperature);
+  lcd.print("\1C  ");
 }
+
 void updateHT()
 {
-  h = dht.readHumidity();
-  t = dht.readTemperature();
+  humidity = dht.readHumidity();
+  temperature = dht.readTemperature();
 }
-void turnLight(bool value)
+
+void turnLight(boolean value)
 {
-  lightActive = value;
+  isLightActive = value;
   if (value) {
-    analogWrite(LIGHT, 128);
+    analogWrite(PIN_LIGHT, 128);
   } else {
-    analogWrite(LIGHT, 0);
+    analogWrite(PIN_LIGHT, 0);
   }
 }
-void turnAlarm(bool active)
+
+void turnAlarm(boolean active)
 {
-  alarmActive = active;
-  if (alarmActive) {
-    digitalWrite(ALARMLED, 1);
+  isAlarmActive = active;
+  if (isAlarmActive) {
+    digitalWrite(PIN_ALARMLED, 1);
   } else {
-    digitalWrite(ALARMLED, 0);
+    digitalWrite(PIN_ALARMLED, 0);
   }
 }
