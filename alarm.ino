@@ -38,6 +38,8 @@ byte degreeSymbol[8] = {
 #define PIN_DHT A0
 #define PIN_BTN A1
 #define PIN_LIGHT_DETECTOR A2
+#define PIN_WARM_LIGHT A3
+#define PIN_COLD_LIGHT A4
 
 boolean isAlarmActive = false;
 boolean isLightActive = true;
