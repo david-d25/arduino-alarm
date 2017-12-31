@@ -19,27 +19,28 @@ byte degreeSymbol[8] = {
 #define LCD_WIDTH 16
 #define LCD_HEIGHT 2
 
-#define TIME_PIN_RST 5
-#define TIME_PIN_DAT 4
-#define TIME_PIN_CLK 3
-
-#define LCD_PIN_RS 6
-#define LCD_PIN_E 7
-#define LCD_PIN_DB4 8
-#define LCD_PIN_DB5 9
-#define LCD_PIN_DB6 10
-#define LCD_PIN_DB7 11
-
-#define PIN_LIGHT 12
-#define PIN_ALARMLED 13
-
 #define PIN_BTN_INTERRUPT 2
+
+#define TIME_PIN_CLK 3
+#define TIME_PIN_DAT 4
+#define TIME_PIN_RST 5
+
+#define LCD_BACKLIGHT 6
+
+#define LCD_PIN_RS 7
+#define LCD_PIN_E 8
+#define PIN_ALARMLED 9
+#define LCD_PIN_DB4 10
+#define LCD_PIN_DB5 11
+#define LCD_PIN_DB6 12
+#define LCD_PIN_DB7 13
 
 #define PIN_DHT A0
 #define PIN_BTN A1
 #define PIN_LIGHT_DETECTOR A2
 #define PIN_WARM_LIGHT A3
 #define PIN_COLD_LIGHT A4
+#define PIN_DEBUG_MODE A5
 
 boolean isAlarmActive = false;
 boolean isLightActive = true;
@@ -52,7 +53,6 @@ int temperature = 0;
 int humidity = 0;
 
 void setup() {
-  pinMode(PIN_LIGHT, OUTPUT);
   pinMode(PIN_ALARMLED, OUTPUT);
   
   pinMode(PIN_BTN_INTERRUPT, INPUT_PULLUP);
